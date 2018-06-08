@@ -20,8 +20,8 @@ class Epsilon_Plugin_Request {
 	 * @var array
 	 */
 	private $data = array(
-		'server' => array(),
-		'user' => array(),
+		'server'    => array(),
+		'user'      => array(),
 		'wordpress' => array(
 			'deactivated_plugin' => array(),
 		),
@@ -36,14 +36,14 @@ class Epsilon_Plugin_Request {
 	private $allow_tracking = 0;
 
 	public $request_successful = false;
-	
+
 	function __construct( $_plugin_file, $args ) {
 
 		// Set variables
 		$this->allow_tracking = $args['tracking'];
-		$this->plugin_file = $_plugin_file;
+		$this->plugin_file    = $_plugin_file;
 		$this->data['unique'] = md5( home_url() . get_bloginfo( 'admin_email' ) );
-		$this->data['wordpress']['deactivated_plugin']['uninstall_reason'] = $args['reason'];
+		$this->data['wordpress']['deactivated_plugin']['uninstall_reason']  = $args['reason'];
 		$this->data['wordpress']['deactivated_plugin']['uninstall_details'] = $args['details'];
 
 		// Start collecting data
@@ -61,10 +61,10 @@ class Epsilon_Plugin_Request {
 		$current_plugin = get_plugin_data( $this->plugin_file );
 
 		// Plugin data
-		$this->data['wordpress']['deactivated_plugin']['slug'] = $current_plugin['TextDomain'];
-		$this->data['wordpress']['deactivated_plugin']['name'] = $current_plugin['Name'];
+		$this->data['wordpress']['deactivated_plugin']['slug']    = $current_plugin['TextDomain'];
+		$this->data['wordpress']['deactivated_plugin']['name']    = $current_plugin['Name'];
 		$this->data['wordpress']['deactivated_plugin']['version'] = $current_plugin['Version'];
-		$this->data['wordpress']['deactivated_plugin']['author'] = $current_plugin['AuthorName'];
+		$this->data['wordpress']['deactivated_plugin']['author']  = $current_plugin['AuthorName'];
 
 		if ( $this->allow_tracking ) {
 			$this->_collect_wordpress_data();
@@ -79,11 +79,11 @@ class Epsilon_Plugin_Request {
 	 *
 	 */
 	private function _collect_wordpress_data() {
-		$this->data['wordpress']['locale'] = ( get_bloginfo( 'version' ) >= 4.7 ) ? get_user_locale() : get_locale();
+		$this->data['wordpress']['locale']     = ( get_bloginfo( 'version' ) >= 4.7 ) ? get_user_locale() : get_locale();
 		$this->data['wordpress']['wp_version'] = get_bloginfo( 'version' );
-		$this->data['wordpress']['multisite'] = is_multisite();
+		$this->data['wordpress']['multisite']  = is_multisite();
 
-		$this->data['wordpress']['themes'] = $this->get_themes();
+		$this->data['wordpress']['themes']  = $this->get_themes();
 		$this->data['wordpress']['plugins'] = $this->get_plugins();
 	}
 
@@ -92,9 +92,9 @@ class Epsilon_Plugin_Request {
 	 *
 	 */
 	private function _collect_server_data() {
-		$this->data['server']['server'] = isset( $_SERVER['SERVER_SOFTWARE'] ) ? $_SERVER['SERVER_SOFTWARE'] : '';
+		$this->data['server']['server']      = isset( $_SERVER['SERVER_SOFTWARE'] ) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$this->data['server']['php_version'] = phpversion();
-		$this->data['server']['url'] = home_url();
+		$this->data['server']['url']         = home_url();
 	}
 
 	/**
@@ -104,13 +104,13 @@ class Epsilon_Plugin_Request {
 	private function _collect_user_data() {
 		$admin = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
 		if ( ! $admin ) {
-			$this->data['user']['email'] = '';
+			$this->data['user']['email']      = '';
 			$this->data['user']['first_name'] = '';
-			$this->data['user']['last_name'] = '';
-		}else{
-			$this->data['user']['email'] = get_bloginfo( 'admin_email' );
+			$this->data['user']['last_name']  = '';
+		} else {
+			$this->data['user']['email']      = get_bloginfo( 'admin_email' );
 			$this->data['user']['first_name'] = $admin->first_name;
-			$this->data['user']['last_name'] = $admin->last_name;
+			$this->data['user']['last_name']  = $admin->last_name;
 		}
 	}
 
@@ -149,7 +149,7 @@ class Epsilon_Plugin_Request {
 				'slug'    => $slug,
 				'name'    => $info->get( 'Name' ),
 				'version' => $info->get( 'Version' ),
-				'author'  => $info->get( 'Author' )
+				'author'  => $info->get( 'Author' ),
 			);
 		};
 
@@ -205,15 +205,17 @@ class Epsilon_Plugin_Request {
 	 */
 	private function _send_request() {
 
-		$request = wp_remote_post( $this->url, array(
-			'method'      => 'POST',
-			'timeout'     => 20,
-			'redirection' => 5,
-			'httpversion' => '1.1',
-			'blocking'    => true,
-			'body'        => $this->data,
-			'user-agent'  => 'MT/EPSILON-CUSTOMER-TRACKING/' . esc_url( home_url() )
-		) );
+		$request = wp_remote_post(
+			$this->url, array(
+				'method'      => 'POST',
+				'timeout'     => 20,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				'blocking'    => true,
+				'body'        => $this->data,
+				'user-agent'  => 'MT/EPSILON-CUSTOMER-TRACKING/' . esc_url( home_url() ),
+			)
+		);
 
 		if ( is_wp_error( $request ) ) {
 			return false;

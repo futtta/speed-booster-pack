@@ -1,7 +1,7 @@
 <?php
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Generate Styles List
+	CSS OPTIMIZER - Generate Styles List
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_generate_styles_list() {
@@ -28,7 +28,7 @@ function sbp_generate_styles_list() {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Deregister all styles
+	CSS OPTIMIZER - Deregister all styles
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_unregister_styles() {
@@ -51,7 +51,7 @@ function sbp_unregister_styles() {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Generate inline styles
+	CSS OPTIMIZER - Generate inline styles
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_inline_css( $url, $minify = true ) {
@@ -92,7 +92,7 @@ function sbp_inline_css( $url, $minify = true ) {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Rebuilding CSS URLs
+	CSS OPTIMIZER - Rebuilding CSS URLs
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_rebuilding_css_urls( $css, $url ) {
@@ -104,13 +104,12 @@ function sbp_rebuilding_css_urls( $css, $url ) {
 	// new regex expression
 	$css = preg_replace( "/url(?!\(['\"]?(data:|http:))\(['\"]?([^\/][^'\"\)]*)['\"]?\)/i", "url({$css_dir}/$2)", $css );
 
-
 	return $css;
 }
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Minify All CSS
+	CSS OPTIMIZER - Minify All CSS
 ---------------------------------------------------------------------------------------------------------*/
 
 
@@ -135,7 +134,7 @@ function sbp_minify_css( $css ) {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - Remove multi-line comments from CSS
+	CSS OPTIMIZER - Remove multi-line comments from CSS
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_remove_multiline_comments( $code, $method = 0 ) {
@@ -146,27 +145,26 @@ function sbp_remove_multiline_comments( $code, $method = 0 ) {
 
 				$code = preg_replace( '/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $code );
 				break;
-			}
+		}
 
 		case 0:
-
 		default :
 			{
 
 				$open_pos = strpos( $code, '/*' );
-				while ( $open_pos !== false ) {
-					$close_pos = strpos( $code, '*/', $open_pos ) + 2;
-					if ( $close_pos ) {
-						$code = substr( $code, 0, $open_pos ) . substr( $code, $close_pos );
-					} else {
-						$code = substr( $code, 0, $open_pos );
-					}
-
-					$open_pos = strpos( $code, '/*', $open_pos );
+			while ( $open_pos !== false ) {
+				$close_pos = strpos( $code, '*/', $open_pos ) + 2;
+				if ( $close_pos ) {
+					$code = substr( $code, 0, $open_pos ) . substr( $code, $close_pos );
+				} else {
+					$code = substr( $code, 0, $open_pos );
 				}
 
-				break;
+				$open_pos = strpos( $code, '/*', $open_pos );
 			}
+
+			break;
+		}
 	}
 
 	return $code;
@@ -174,7 +172,7 @@ function sbp_remove_multiline_comments( $code, $method = 0 ) {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - get stylesheets exception list
+	CSS OPTIMIZER - get stylesheets exception list
 ---------------------------------------------------------------------------------------------------------*/
 
 function sbp_style_exceptions() {
@@ -206,7 +204,7 @@ function sbp_style_exceptions() {
 
 
 /*--------------------------------------------------------------------------------------------------------
-    CSS OPTIMIZER - get stylesheets exception names
+	CSS OPTIMIZER - get stylesheets exception names
 ---------------------------------------------------------------------------------------------------------*/
 
 function is_css_excluded( $file ) {

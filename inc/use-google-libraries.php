@@ -5,8 +5,8 @@ if ( ! class_exists( 'JCP_UseGoogleLibraries' ) ) {
 	class JCP_UseGoogleLibraries {
 
 		protected static $instance;
-		protected static $plugin_file = __FILE__;
-		protected static $version = '1.6.2.3';
+		protected static $plugin_file       = __FILE__;
+		protected static $version           = '1.6.2.3';
 		protected static $noconflict_inject = "<script type='text/javascript'>try{jQuery.noConflict();}catch(e){};</script>\n";
 
 		public static function get_instance() {
@@ -110,75 +110,75 @@ if ( ! class_exists( 'JCP_UseGoogleLibraries' ) ) {
 		 */
 		protected static $default_google_scripts = array(
 			/* jQuery */
-			'jquery' => array( 'jquery', 'jquery.min', '' ),
+			'jquery'                   => array( 'jquery', 'jquery.min', '' ),
 
 			/* jQuery UI */
-			'jquery-ui-core' => array( 'jqueryui', 'jquery-ui.min', '' ),
-			'jquery-ui-accordion' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-autocomplete' => array( '', '', 'jquery-ui-core' ), /* jQueri UI 1.8 */
-			'jquery-ui-button' => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.8 */
-			'jquery-ui-datepicker' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-dialog' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-draggable' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-droppable' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-menu' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-mouse' => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
-			'jquery-ui-position' => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
-			'jquery-ui-progressbar' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-resizable' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-selectable' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-selectmenu' => array( '', '', 'jquery-ui-core' ),/* jQuery UI 1.11 */
-			'jquery-ui-slider' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-sortable' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-spinner' => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
-			'jquery-ui-tabs' => array( '', '', 'jquery-ui-core' ),
-			'jquery-ui-tooltip' => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
-			'jquery-ui-widget' => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
+			'jquery-ui-core'           => array( 'jqueryui', 'jquery-ui.min', '' ),
+			'jquery-ui-accordion'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-autocomplete'   => array( '', '', 'jquery-ui-core' ), /* jQueri UI 1.8 */
+			'jquery-ui-button'         => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.8 */
+			'jquery-ui-datepicker'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-dialog'         => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-draggable'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-droppable'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-menu'           => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-mouse'          => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
+			'jquery-ui-position'       => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
+			'jquery-ui-progressbar'    => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-resizable'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-selectable'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-selectmenu'     => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
+			'jquery-ui-slider'         => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-sortable'       => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-spinner'        => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
+			'jquery-ui-tabs'           => array( '', '', 'jquery-ui-core' ),
+			'jquery-ui-tooltip'        => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
+			'jquery-ui-widget'         => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
 
 			/* jQuery Effects */
-			'jquery-effects-core' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-blind' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-bounce' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-clip' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-drop' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-explode' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-fade' => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
-			'jquery-effects-fold' => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-core'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-blind'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-bounce'    => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-clip'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-drop'      => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-explode'   => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-fade'      => array( '', '', 'jquery-ui-core' ),  /* jQuery UI 1.8 */
+			'jquery-effects-fold'      => array( '', '', 'jquery-ui-core' ),
 			'jquery-effects-highlight' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-puff' => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
-			'jquery-effects-pulsate' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-scale' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-shake' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-size' => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
-			'jquery-effects-slide' => array( '', '', 'jquery-ui-core' ),
-			'jquery-effects-transfer' => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-puff'      => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
+			'jquery-effects-pulsate'   => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-scale'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-shake'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-size'      => array( '', '', 'jquery-ui-core' ), /* jQuery UI 1.11 */
+			'jquery-effects-slide'     => array( '', '', 'jquery-ui-core' ),
+			'jquery-effects-transfer'  => array( '', '', 'jquery-ui-core' ),
 
 			/* prototype */
-			'prototype' => array( 'prototype', 'prototype', '' ),
+			'prototype'                => array( 'prototype', 'prototype', '' ),
 
 			/* scriptaculous */
-			'scriptaculous-root' => array( 'scriptaculous', 'scriptaculous', '' ),
-			'scriptaculous-builder' => array( '', '', 'scriptaculous-root' ),
-			'scriptaculous-effects' => array( '', '', 'scriptaculous-root' ),
-			'scriptaculous-dragdrop' => array( '', '', 'scriptaculous-root' ),
-			'scriptaculous-controls' => array( '', '', 'scriptaculous-root' ),
-			'scriptaculous-slider' => array( '', '', 'scriptaculous-root' ),
-			'scriptaculous-sound' => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-root'       => array( 'scriptaculous', 'scriptaculous', '' ),
+			'scriptaculous-builder'    => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-effects'    => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-dragdrop'   => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-controls'   => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-slider'     => array( '', '', 'scriptaculous-root' ),
+			'scriptaculous-sound'      => array( '', '', 'scriptaculous-root' ),
 
 			/* moo tools */
-			'mootools' => array( 'mootools', 'mootools-yui-compressed', '' ),
+			'mootools'                 => array( 'mootools', 'mootools-yui-compressed', '' ),
 
 			/* Dojo */
-			'dojo' => array( 'dojo', 'dojo.xd', '' ),
+			'dojo'                     => array( 'dojo', 'dojo.xd', '' ),
 
 			/* swfobject */
-			'swfobject' => array( 'swfobject', 'swfobject', '' ),
+			'swfobject'                => array( 'swfobject', 'swfobject', '' ),
 
 			/* YUI */
-			'yui' => array( 'yui', 'build/yuiloader/yuiloader-min', '' ),
+			'yui'                      => array( 'yui', 'build/yuiloader/yuiloader-min', '' ),
 
 			/* Ext Core */
-			'ext-core' => array( 'ext-core', 'ext-core', '' )
+			'ext-core'                 => array( 'ext-core', 'ext-core', '' ),
 
 		);
 
@@ -304,9 +304,9 @@ if ( ! class_exists( 'JCP_UseGoogleLibraries' ) ) {
 			// it around for dependencies
 			if ( $lib != '' ) {
 				// build new URL
-				$url  = "//ajax.googleapis.com/ajax/libs/$lib/$ver/$js.js";
+				$url       = "//ajax.googleapis.com/ajax/libs/$lib/$ver/$js.js";
 				$proto_url = "http:$url";
-				$head = wp_remote_head( $proto_url );
+				$head      = wp_remote_head( $proto_url );
 				if ( wp_remote_retrieve_response_code( $head ) !== 200 ) {
 					self::debug( "Google servers do not seem to be hosting requested version of $name (version $ver). Using version provided by WordPress." );
 					return $orig_url;
@@ -342,8 +342,8 @@ if ( ! class_exists( 'JCP_UseGoogleLibraries' ) ) {
 
 			foreach ( $this->google_scripts as $name => $values ) {
 				if ( $script = $scripts->query( $name ) ) {
-					$lib = $values[0];
-					$js = $values[1];
+					$lib      = $values[0];
+					$js       = $values[1];
 					$combined = $values[2];
 					// default to requested ver
 					$ver = $script->ver;
@@ -407,9 +407,9 @@ if ( ! class_exists( 'JCP_UseGoogleLibraries' ) ) {
 				( ! isset( $cache['wp_ver'] ) ) || ( $cache['wp_ver'] !== $wp_ver ) ||
 				( ! isset( $cache['newscripts'] ) ) ) {
 				$newscripts = $this->build_newscripts( $scripts );
-				$cache = array(
-					'ugl_ver' => self::$version,
-					'wp_ver' => $wp_ver,
+				$cache      = array(
+					'ugl_ver'    => self::$version,
+					'wp_ver'     => $wp_ver,
 					'newscripts' => $newscripts,
 				);
 				set_transient( self::$cache_id, $cache, self::$cache_len );

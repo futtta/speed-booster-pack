@@ -1,7 +1,7 @@
 <?php
 
 /*--------------------------------------------------------------------------------------------------------
-    Plugin Core Functions
+	Plugin Core Functions
 ---------------------------------------------------------------------------------------------------------*/
 
 if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
@@ -21,9 +21,7 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			add_action( 'after_setup_theme', array( $this, 'sbp_junk_header_tags' ) );
 			add_action( 'init', array( $this, 'sbp_init' ) );
 
-
 			$this->sbp_css_optimizer(); // CSS Optimizer functions
-
 
 			//	Use Google Libraries
 			if ( ! is_admin() and isset( $sbp_options['use_google_libs'] ) ) {
@@ -51,11 +49,9 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				add_filter( 'style_loader_src', array( $this, 'sbp_remove_query_strings' ), 15, 1 );
 			}
 
-
 			// JPEG  Compression filter
 			add_filter( 'jpeg_quality', array( $this, 'filter_image_quality' ) );
 			add_filter( 'wp_editor_set_quality', array( $this, 'filter_image_quality' ) );
-
 
 			/**
 			 * @since 3.7
@@ -86,7 +82,7 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 			global $sbp_options;
 
-			if ( wp_is_mobile() and isset ( $sbp_options['sbp_is_mobile'] ) ) {    // disable all CSS options on mobile devices
+			if ( wp_is_mobile() and isset( $sbp_options['sbp_is_mobile'] ) ) {    // disable all CSS options on mobile devices
 				return;
 			}
 
@@ -138,16 +134,17 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				$not_inlined = array();
 
 				foreach ( $sbp_styles as $style ) {
-					echo "<style type=\"text/css\" " . ( $style['media'] ? "media=\"{$style['media']}\"" : '' ) . ">";
+					echo '<style type="text/css" ' . ( $style['media'] ? "media=\"{$style['media']}\"" : '' ) . '>';
 					if ( ! sbp_inline_css( $style['src'], $minify ) ) {
 						$not_inlined[] = $style;
 					}
-					echo "</style>";
+					echo '</style>';
 				}
 				if ( ! empty( $not_inlined ) ) {
 					foreach ( $not_inlined as $style ) {
 						?>
-						<link rel="stylesheet" href="<?php echo $style['src'] ?>" type="text/css" <?php echo $style['media'] ? "media=\"{$style['media']}\"" : '' ?> /><?php
+						<link rel="stylesheet" href="<?php echo $style['src']; ?>" type="text/css" <?php echo $style['media'] ? "media=\"{$style['media']}\"" : ''; ?> />
+																<?php
 					}
 				}
 			}
@@ -174,16 +171,17 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 				$not_inlined = array();
 				foreach ( $sbp_styles as $style ) {
-					echo "<style type=\"text/css\" " . ( $style['media'] ? "media=\"{$style['media']}\"" : '' ) . ">";
+					echo '<style type="text/css" ' . ( $style['media'] ? "media=\"{$style['media']}\"" : '' ) . '>';
 					if ( ! sbp_inline_css( $style['src'], $minify ) ) {
 						$not_inlined[] = $style;
 					}
-					echo "</style>";
+					echo '</style>';
 				}
 				if ( ! empty( $not_inlined ) ) {
 					foreach ( $not_inlined as $style ) {
 						?>
-						<link rel="stylesheet" href="<?php echo $style['src'] ?>" type="text/css" <?php echo $style['media'] ? "media=\"{$style['media']}\"" : '' ?> /><?php
+						<link rel="stylesheet" href="<?php echo $style['src']; ?>" type="text/css" <?php echo $style['media'] ? "media=\"{$style['media']}\"" : ''; ?> />
+																<?php
 					}
 				}
 			}
@@ -214,7 +212,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 		---------------------------------------------------------------------------------------------------------*/
 
 		public function sbp_scripts_to_head() {
-
 
 			if ( get_option( 'sbp_head_html_script1' ) ) {
 				echo get_option( 'sbp_head_html_script1' ) . "\n";
@@ -279,7 +276,7 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				// if the script actually exists, dequeue it and re-add it for header inclusion
 				$script_src = $wp_scripts->registered['jquery-core']->src;
 
-				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append wordpress installation URL
+				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append WordPress installation URL
 					echo '<script type="text/javascript" src="' . get_site_url() . esc_attr( $script_src ) . '"></script>';
 				} else {
 					echo '<script type="text/javascript" src="' . esc_attr( $script_src ) . '"></script>';
@@ -289,7 +286,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				wp_deregister_script( 'jquery-core' );
 				wp_dequeue_script( 'jquery-core' );
 			}
-
 
 			/**
 			 * Echo the scripts in the header
@@ -304,7 +300,7 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				// if the script actually exists, dequeue it and re-add it for header inclusion
 				$script_src = $wp_scripts->registered[ $js_footer_exceptions1 ]->src;
 
-				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append wordpress installation URL
+				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append WordPress installation URL
 					echo '<script type="text/javascript" src="' . esc_attr( $script_src ) . '"></script>';
 				} else {
 					echo '<script type="text/javascript" src="' . esc_attr( $script_src ) . '"></script>';
@@ -333,7 +329,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				} else {
 					echo '<script type="text/javascript" src="' . esc_attr( $script_src ) . '"></script>';
 				}
-
 			}
 
 			if ( array_key_exists( $js_footer_exceptions4, $wp_scripts->registered ) ) {
@@ -341,13 +336,12 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				// if the script actually exists, dequeue it and re-add it for header inclusion
 				$script_src = $wp_scripts->registered[ $js_footer_exceptions4 ]->src;
 
-				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append wordpress installation URL
+				if ( strpos( $script_src, 'wp-includes' ) == true ) { // it's a local resource, append WordPress installation URL
 					echo '<script type="text/javascript" src="' . get_site_url() . esc_attr( $script_src ) . '"></script>';
 				} else {
 					echo '<script type="text/javascript" src="' . esc_attr( $script_src ) . '"></script>';
 				}
 			}
-
 
 			/**
 			 * De-register the scripts from other parts of the site since they're already echo-ed in the header
@@ -490,7 +484,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			$array_with_values = apply_filters( 'sbp_exclude_defer_scripts', $array_with_values ); // possibility of extending this via filters
 			$array_with_values = array_filter( $array_with_values ); // remove empty entries
 
-
 			if ( ! in_array( $handle, $array_with_values ) ) {
 				return '<script src="' . $src . '" defer="defer" type="text/javascript"></script>' . "\n";
 			}
@@ -504,9 +497,10 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			Remove query strings from static resources
 		---------------------------------------------------------------------------------------------------------*/
 
-		function sbp_remove_query_strings( $src ) {    //	remove "?ver" string
+		function sbp_remove_query_strings( $src ) {
+			//	remove "?ver" string
 
-			$output = preg_split( "/(\?rev|&ver|\?ver)/", $src );
+			$output = preg_split( '/(\?rev|&ver|\?ver)/', $src );
 
 			return $output[0];
 

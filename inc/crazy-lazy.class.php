@@ -117,13 +117,13 @@ final class CrazyLazy {
 		if ( false !== strpos( $matches['all'], 'data-crazy-lazy="exclude"' ) || false !== strpos( $matches['class1'] . $matches['class2'], 'crazy_lazy' ) ) {
 			return $matches['all'];
 		} else {
-            return '<img ' . $matches['before']
-                   . ' style="display:none" '
-                   . ' class="crazy_lazy ' . $matches['class1'] . $matches['class2'] . '" src="' . $null . '" '
-                   . $matches['between1'] . $matches['between2']
-                   . ' data-src="' . $matches['src1'] . $matches['src2'] . '" '
-                   . $matches['after']
-                   . $matches['closing'] . '><noscript>' . $matches['all'] . '</noscript>';
+			return '<img ' . $matches['before']
+				   . ' style="display:none" '
+				   . ' class="crazy_lazy ' . $matches['class1'] . $matches['class2'] . '" src="' . $null . '" '
+				   . $matches['between1'] . $matches['between2']
+				   . ' data-src="' . $matches['src1'] . $matches['src2'] . '" '
+				   . $matches['after']
+				   . $matches['closing'] . '><noscript>' . $matches['all'] . '</noscript>';
 		}
 	}
 
@@ -155,7 +155,7 @@ final class CrazyLazy {
 	 */
 	private static function _print_jquery_lazyload() {
 		// wp_enqueue_script( 'unveil.js', plugins_url( '/js/jquery.unveil.min.js', CRAZY_LAZY_BASE ), array( 'jquery' ), '', true );
-		wp_enqueue_script( 'unveil.js',  plugin_dir_url( __FILE__ ) . 'js/jquery.unveil.min.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
+		wp_enqueue_script( 'unveil.js', plugin_dir_url( __FILE__ ) . 'js/jquery.unveil.min.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
 	}
 
 
@@ -167,6 +167,6 @@ final class CrazyLazy {
 	 */
 	private static function _print_javascript_lazyload() {
 		// wp_enqueue_script( 'lazyload.js', plugins_url( '/js/lazyload.min.js', CRAZY_LAZY_BASE ), array(), '', true );
-		wp_enqueue_script( 'lazyload.js',  plugin_dir_url( __FILE__ ) . 'js/lazyload.min.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
+		wp_enqueue_script( 'lazyload.js', plugin_dir_url( __FILE__ ) . 'js/lazyload.min.js', array( 'jquery' ), SPEED_BOOSTER_PACK_VERSION, true );
 	}
 }

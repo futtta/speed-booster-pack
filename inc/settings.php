@@ -49,7 +49,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 
 			global $wp_scripts;
 
-
 			// scripts
 			foreach ( $wp_scripts->registered as $registered ) {
 				$script_urls[ $registered->handle ] = $registered->src;
@@ -66,7 +65,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 				if ( ! empty( $script_urls[ $handle ] ) ) {
 					$get_enqueued_scripts_handle .= $handle . '<br />';
 				}
-
 			}
 
 			update_option( 'all_theme_scripts_handle', $get_enqueued_scripts_handle );
@@ -97,7 +95,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 				if ( ! empty( $script_urls[ $handle ] ) ) {
 					$get_enqueued_scripts_src .= $script_urls[ $handle ] . '<br />';
 				}
-
 			}
 
 			update_option( 'all_theme_scripts_src', $get_enqueued_scripts_src );
@@ -112,7 +109,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 		public function sbp_detected_styles_handle( $handles = array() ) {
 
 			global $wp_styles;
-
 
 			// scripts
 			foreach ( $wp_styles->registered as $registered ) {
@@ -130,7 +126,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 				if ( ! empty( $style_urls[ $handle ] ) ) {
 					$get_enqueued_styles_handle .= $handle . '<br />';
 				}
-
 			}
 
 			update_option( 'all_theme_styles_handle', $get_enqueued_styles_handle );
@@ -162,7 +157,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 						$output[ $key ] = esc_html( $tigu );
 						break;
 				}
-
 			}
 
 			return $output;
@@ -176,10 +170,12 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 		public function sbp_add_menu() {
 
 			global $sbp_settings_page;
-			$sbp_settings_page = add_menu_page( __( 'Speed Booster Options', 'sb-pack' ), __( 'Speed Booster', 'sb-pack' ), 'manage_options', 'sbp-options', array(
-				$this,
-				'sbp_plugin_settings_page',
-			), plugin_dir_url( __FILE__ ) . 'images/icon-16x16.png' );
+			$sbp_settings_page = add_menu_page(
+				__( 'Speed Booster Options', 'sb-pack' ), __( 'Speed Booster', 'sb-pack' ), 'manage_options', 'sbp-options', array(
+					$this,
+					'sbp_plugin_settings_page',
+				), plugin_dir_url( __FILE__ ) . 'images/icon-16x16.png'
+			);
 
 		}   //  END public function add_menu()
 
@@ -189,7 +185,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 			if ( ! current_user_can( 'manage_options' ) ) {
 				wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 			}
-
 
 			/*--------------------------------------------------------------------------------------------------------
 				Global Variables used on options HTML page
@@ -249,8 +244,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 
 			/*--------------------------------------------------------------------------------------------------------*/
 
-
-
 			if ( get_option( 'sbp_defer_exceptions1' ) ) {
 				$defer_exceptions1 = get_option( 'sbp_defer_exceptions1' );
 			} else {
@@ -276,8 +269,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 			}
 
 			/*--------------------------------------------------------------------------------------------------------*/
-
-
 
 			// Render the plugin options page HTML
 			include( SPEED_BOOSTER_PACK_PATH . 'inc/template/options.php' );
