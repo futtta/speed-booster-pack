@@ -22,7 +22,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 
 			register_setting( 'speed_booster_settings_group', 'sbp_settings' );
 			register_setting( 'speed_booster_settings_group', 'sbp_css_exceptions' );
-			register_setting( 'speed_booster_settings_group', 'sbp_sanitize' );
 
 		}  //  END public function admin_init
 

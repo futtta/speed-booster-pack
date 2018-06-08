@@ -48,6 +48,7 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 		}  //  END public public function __construct
 
+
 		/*--------------------------------------------------------------------------------------------------------
 			Minify HTML and Javascripts
 		---------------------------------------------------------------------------------------------------------*/
@@ -126,29 +127,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			return $headers;
 		}
 
-		/*--------------------------------------------------------------------------------------------------------
-			Dequeue extra Font Awesome stylesheet
-		---------------------------------------------------------------------------------------------------------*/
-
-		function sbp_no_more_fontawesome() {
-			global $wp_styles;
-			global $sbp_options;
-
-			// we'll use preg_match to find only the following patterns as exact matches, to prevent other plugin stylesheets that contain font-awesome expression to be also dequeued
-			$patterns = array(
-				'font-awesome.css',
-				'font-awesome.min.css',
-			);
-			//	multiple patterns hook
-			$regex = '/(' . implode( '|', $patterns ) . ')/i';
-			foreach ( $wp_styles->registered as $registered ) {
-				if ( ! is_admin() and preg_match( $regex, $registered->src ) and isset( $sbp_options['font_awesome'] ) ) {
-					wp_dequeue_style( $registered->handle );
-					// FA was dequeued, so here we need to enqueue it again from CDN
-					wp_enqueue_style( 'font-awesome', '//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css' );
-				}    //	END if( preg_match...
-			}    //	END foreach
-		}    //	End function dfa_no_more_fontawesome
 
 
 		/*--------------------------------------------------------------------------------------------------------

@@ -47,39 +47,12 @@ if ( is_array( $option_arr ) && in_array( 'defer-from-footer', $option_arr ) ) {
 
 				<h3><?php _e( 'General', 'sb-pack' ); ?></h3>
 
-				<p>
-					<input id="sbp_settings[jquery_to_footer]" name="sbp_settings[jquery_to_footer]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['jquery_to_footer'] ) ); ?> />
-					<label for="sbp_settings[jquery_to_footer]"><?php _e( 'Move scripts to the footer', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'This option move all scripts to the footer while keeping stylesheets in the header to improve page loading speed and get a higher score on the major speed testing sites such as GTmetrix or other website speed testing tools.', 'sb-pack' ); ?>">
-						<i class="dashicons dashicons-editor-help"></i>
-					</span>
-
-				</p>
-
-				<p>
-					<input id="sbp_settings[use_google_libs]" name="sbp_settings[use_google_libs]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['use_google_libs'] ) ); ?> />
-					<label for="sbp_settings[use_google_libs]"><?php _e( 'Load JS from Google Libraries', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Loading WordPress javascript files from Google’s Libraries rather than serving it from your WordPress install directly, will reduce latency, increase parallelism and improve caching.', 'sb-pack' ); ?>">
-						<i class="dashicons dashicons-editor-help"></i>
-					</span>
-				</p>
 
 				<p>
 					<input id="sbp_settings[minify_html_js]" name="sbp_settings[minify_html_js]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['minify_html_js'] ) ); ?> />
-					<label for="sbp_settings[minify_html_js]"><?php _e( 'Minify HTML', 'sb-pack' ); ?></label>
+					<label for="sbp_settings[minify_html_js]"><?php _e( 'Optimize HTML', 'sb-pack' ); ?></label>
 					<span class="tooltip-right"
 					      data-tooltip="<?php echo __( 'Activate this option only if you don’t want to use other minify plugins or other speed optimization plugin that has minify option included. If something goes wrong, simply uncheck this option and save the settings.', 'sb-pack' ); ?>">
-						<i class="dashicons dashicons-editor-help"></i>
-					</span>
-				</p>
-
-				<p>
-					<input id="sbp_settings[defer_parsing]" name="sbp_settings[defer_parsing]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['defer_parsing'] ) ); ?> />
-					<label for="sbp_settings[defer_parsing]"><?php _e( 'Defer parsing of javascript files', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( '!!!Note: This will be disabled IF Move Scripts to Footer is enabled. By deferring parsing of unneeded JavaScript until it needs to be executed, you can reduce the initial load time of your page. Please note that this option will not defer the main WordPress jQuery script if Load JS from Google Libraries option is not checked.', 'sb-pack' ); ?>">
 						<i class="dashicons dashicons-editor-help"></i>
 					</span>
 				</p>
@@ -88,20 +61,12 @@ if ( is_array( $option_arr ) && in_array( 'defer-from-footer', $option_arr ) ) {
 					<input id="sbp_settings[query_strings]" name="sbp_settings[query_strings]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['query_strings'] ) ); ?> />
 					<label for="sbp_settings[query_strings]"><?php _e( 'Remove query strings', 'sb-pack' ); ?></label>
 					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Since most proxies do not cache resources with a ? in their URL, this option allows you to remove any query strings (version numbers) from static resources like CSS & JS files, thus improving your speed scores in services like GTmetrix, PageSpeed, YSlow and Pingdoom.', 'sb-pack' ); ?>">
+					      data-tooltip="<?php echo __( 'Removing query strings (or more specificaly the ver parameter) will not improve load time, but will sometimes improve performance scores in Google Page Speed Insights.', 'sb-pack' ); ?>">
 						<i class="dashicons dashicons-editor-help"></i>
 					</span>
 				</p>
 
 
-				<p>
-					<input id="sbp_settings[font_awesome]" name="sbp_settings[font_awesome]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['font_awesome'] ) ); ?> />
-					<label for="sbp_settings[font_awesome]"><?php _e( 'Removes extra Font Awesome styles', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Use this option only if your theme uses Font Awesome, to prevent other plugins that uses Font Awesome, to add their stylesheets to your theme. In other words, this option removes extra Font Awesome stylesheets added to your theme by certain plugins.', 'sb-pack' ); ?>">
-						<i class="dashicons dashicons-editor-help"></i>
-					</span>
-				</p>
 
 				<h3> <?php _e( 'More settings', 'sb-pack' ); ?></h3>
 
@@ -179,14 +144,7 @@ if ( is_array( $option_arr ) && in_array( 'defer-from-footer', $option_arr ) ) {
 
 				<h3><?php _e( 'Need even more speed?', 'sb-pack' ); ?></h3>
 
-				<p>
-					<input id="sbp_css_async" name="sbp_settings[sbp_css_async]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['sbp_css_async'] ) ); ?> />
-					<label for="sbp_css_async"><?php _e( 'Inline all CSS styles', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Checking this option will inline the contents of all your stylesheets. This helps with the annoying render blocking error Google Page Speed Insights displays.', 'sb-pack' ); ?>">
-								<i class="dashicons dashicons-editor-help"></i>
-							</span>
-				</p>
+
 
 				<p>
 					<input id="sbp_settings[sbp_css_minify]" name="sbp_settings[sbp_css_minify]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['sbp_css_minify'] ) ); ?> />
@@ -197,23 +155,6 @@ if ( is_array( $option_arr ) && in_array( 'defer-from-footer', $option_arr ) ) {
 							</span>
 				</p>
 
-				<p>
-					<input id="sbp_settings[sbp_footer_css]" name="sbp_settings[sbp_footer_css]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['sbp_footer_css'] ) ); ?> />
-					<label for="sbp_settings[sbp_footer_css]"><?php _e( 'Move all inlined CSS into the footer', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Inserting all CSS styles inline to the footer is a sensitive option that will eliminate render-blocking CSS warning in Google Page Speed test. If there is something broken after activation, you need to disable this option. Please note that before enabling this sensitive option, it is strongly recommended that you also enable the “ Move scripts to the footer” option.', 'sb-pack' ); ?>">
-								<i class="dashicons dashicons-editor-help"></i>
-								</span>
-				</p>
-
-				<p>
-					<input id="sbp_settings[sbp_is_mobile]" name="sbp_settings[sbp_is_mobile]" type="checkbox" value="1" <?php checked( 1, isset( $sbp_options['sbp_is_mobile'] ) ); ?> />
-					<label for="sbp_settings[sbp_is_mobile]"><?php _e( 'Disable all above CSS options on mobile devices', 'sb-pack' ); ?></label>
-					<span class="tooltip-right"
-					      data-tooltip="<?php echo __( 'Disable all above CSS options on mobile devices: this option was added to avoid some appearance issues on mobile devices.', 'sb-pack' ); ?>">
-						<i class="dashicons dashicons-editor-help"></i>
-						</span>
-				</p>
 
 				<div class="td-border-last"></div>
 

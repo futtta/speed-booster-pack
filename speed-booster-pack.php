@@ -67,9 +67,6 @@ $sbp_defaults = array(
 	'disable_xmlrpc'   => 1, // disable XML-RPC pingbacks
 	'font_awesome'     => 1, // remove extra font awesome styles
 	'query_strings'    => 1, // remove query strings
-	'jquery_to_footer' => 0, // move all scripts to footer
-	'use_google_libs'  => 1, // serve JS assets (when possible) from Google CDN
-	'lazy_load'        => 1, // lazyLoad images
 );
 
 $sbp_options = get_option( 'sbp_settings', (array) $sbp_defaults );    // retrieve the plugin settings from the options table
