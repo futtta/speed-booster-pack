@@ -33,7 +33,19 @@
 //@todo: fix lazyLoad with WooCommerce <- it actually works flawlessly, it doesn't seem to work with AO and/or Cloudflare hosted CSS
 //@todo: add system info menu page
 //@todo: automatically collapse accordeons on "advanced" tab
+/**
+ *
+register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions1' );
+register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions2' );
+register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions3' );
+register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions4' );
 
+register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions1' );
+register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions2' );
+register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions3' );
+register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions4' );
+register_setting( 'speed_booster_settings_group', 'sbp_integer' );
+ */
 
 /*----------------------------------------------------------------------------------------------------------
 	Global Variables
@@ -127,30 +139,12 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 		}
 
 
-
 		/*----------------------------------------------------------------------------------------------------------
 			Activate the plugin
 		-----------------------------------------------------------------------------------------------------------*/
 
 		public static function sbp_activate() {
-
-			$get_enqueued_scripts_handle = get_option( 'all_theme_scripts_handle' );
-			$get_enqueued_scripts_src    = get_option( 'all_theme_scripts_src' );
-			$get_enqueued_styles_handle  = get_option( 'all_theme_styles_handle' );
-
-			if ( get_option( 'all_theme_scripts_handle' ) == '' ) {
-				update_option( 'all_theme_scripts_handle', $get_enqueued_scripts_handle );
-			}
-
-			if ( get_option( 'all_theme_scripts_src' ) == '' ) {
-				update_option( 'all_theme_scripts_src', $get_enqueued_scripts_src );
-			}
-
-			if ( get_option( 'all_theme_styles_handle' ) == '' ) {
-				update_option( 'all_theme_styles_handle', $get_enqueued_styles_handle );
-			}
-
-		} // END public static function sb_activate
+		}
 
 
 		/*----------------------------------------------------------------------------------------------------------
