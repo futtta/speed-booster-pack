@@ -96,9 +96,6 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			// load plugin textdomain
 			add_action( 'plugins_loaded', array( $this, 'sbp_load_translation' ) );
 
-			add_action( 'admin_notices', array( &$this, 'sbp_display_notices' ) );
-			add_action( 'wp_ajax_sbp_dismiss_notices', array( &$this, 'sbp_dismiss_notices' ) );
-
 			// Load plugin settings page
 			require_once( SPEED_BOOSTER_PACK_PATH . 'inc/settings.php' );
 			new Speed_Booster_Pack_Options();
@@ -130,25 +127,6 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 		}
 
 
-		/*----------------------------------------------------------------------------------------------------------
-			Display/dismiss admin notices if needed
-		-----------------------------------------------------------------------------------------------------------*/
-
-		function sbp_display_notices() {
-			if ( ! get_option( 'sbp_news' ) ) {
-				global $sbp_settings_page;
-				$screen = get_current_screen();
-				if ( $screen->id != $sbp_settings_page ) {
-					require_once( SPEED_BOOSTER_PACK_PATH . 'inc/template/notice.php' );
-				}
-			}
-		}
-
-		function sbp_dismiss_notices() {
-			update_option( 'sbp_news', true );
-
-			return json_encode( array( 'Status' => 0 ) );
-		}
 
 		/*----------------------------------------------------------------------------------------------------------
 			Activate the plugin
@@ -252,5 +230,3 @@ if ( class_exists( 'Speed_Booster_Pack' ) ) {
 	$speed_booster_pack = new Speed_Booster_Pack();
 
 }    //	End if (!class_exists("Speed_Booster_Pack")) (2)
-
-// make sure to update the path to where you cloned the projects to!
