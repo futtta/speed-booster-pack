@@ -1,0 +1,3 @@
+cpotheme-font-source-sans-pro: //fonts.googleapis.com/css?family=Source+Sans+Pro
+cpotheme-linearicons: https://localhost/wordpress/speed-booster/wp-content/themes/allegiant-pro/core/css/icon-linearicons.css
+cpotheme-fontawesome: https://localhost/wordpress/speed-booster/wp-content/themes/allegiant-pro/core/css/icon-fontawesome.css

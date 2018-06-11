@@ -5,7 +5,7 @@
  * Description: Speed Booster Pack allows you to improve your page loading speed and get a higher score on the major
  * speed testing services such as <a href="http://gtmetrix.com/">GTmetrix</a>, <a
  * href="http://developers.google.com/speed/pagespeed/insights/">Google PageSpeed</a> or other speed testing tools.
- * Version: 3.7
+ * Version: 3.7.2
  * Author: Macho Themes
  * Author URI: https://www.machothemes.com/
  * License: GPLv2
@@ -83,6 +83,13 @@ if ( ! defined( 'SHORTPIXEL_AFFILIATE_CODE' ) ) {
 	define( 'SHORTPIXEL_AFFILIATE_CODE', 'U3NQVWK31472' );
 }
 
+
+define( 'APHMS_PLUGIN_DIR_NAME', 'speed-booster-pack' );
+define( 'APHMS_PLUGIN_FILE_NAME', 'speed-booster-pack.php' );
+define( 'APHMS_DS', DIRECTORY_SEPARATOR );
+define( 'APHMS_PLUGIN_PATH', WP_PLUGIN_DIR . APHMS_DS . APHMS_PLUGIN_DIR_NAME );
+define( 'APHMS_PLUGIN_URL', WP_PLUGIN_URL . '/' . APHMS_PLUGIN_DIR_NAME );
+
 /*----------------------------------------------------------------------------------------------------------
 	Main Plugin Class
 -----------------------------------------------------------------------------------------------------------*/
@@ -90,6 +97,8 @@ if ( ! defined( 'SHORTPIXEL_AFFILIATE_CODE' ) ) {
 if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 
 	class Speed_Booster_Pack {
+
+		private $to_do = array();
 
 
 		/*----------------------------------------------------------------------------------------------------------
@@ -132,20 +141,121 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/JS/Main.php';
 
 
-			add_action( 'get_header', array( $this, 'start_minify' ), -1 );
+			//add_action( 'get_header', array( $this, 'start_minify' ), -1 );
+
+			//add_action( 'wp_print_scripts', array( $this, 'merge_styles' ), 10 );
 
 		}    // END public function __construct
 
 
-		public function start_minify() {
+		public function merge_styles() {
 
-			if ( ! is_admin() ) {
-				ob_start( array( 'Speed_Booster_Pack', 'spb_compression' ) );
+			/*
+			if ( ! $this->options['merge_styles'] ) {
+				return false;
 			}
+			*/
+
+			global $wp_styles;
+
+			$token        = time();
+			$merged_style = '';
+			$list_handles = array();
+
+
+			$queues = $wp_styles->queue;
+			$wp_styles->all_deps( $queues );
+			$this->to_do['style'] = $wp_styles->queue;
+
+
+
+			$path = APHMS_PLUGIN_PATH . APHMS_DS . 'merged' . APHMS_DS . 'merged-style' . '-' . $token . '.css';
+
+			foreach ( $wp_styles->to_do as $handle ) {
+
+				if ( ! key_exists( $handle, $wp_styles->registered ) ) {
+					continue;
+				}
+
+				$file_path     = $this->file_path( $handle, $wp_styles->registered[ $handle ]->src, 'style' );
+				$file_contents = file_get_contents( $file_path ); // @todo: should use WP FileSystem API with fallback to file_get_contents here
+
+				/**
+				 * We have to save the handle outside the file_exists to make sure all handle are saved,
+				 * this is useful when checking cache
+				 */
+				$list_handles[]         = $handle;
+				$log_handles[ $handle ] = $wp_styles->registered[ $handle ]->src;
+
+
+				$this->deregister['style'][] = $handle;
+				$minifier                    = Minify_CSS::minify( $file_contents );
+
+				$merged_style .= $minifier;
+
+			}
+
+			if ( $merged_style ) {
+				file_put_contents( $path, '/* SPB Merge Scripts v' . SPEED_BOOSTER_PACK_VERSION . ' */' . "\r\n" . $merged_style );
+
+				$log_style_handles = '';
+				foreach ( $log_handles as $handle => $url ) {
+					$log_style_handles .= $handle . ': ' . $url . "\r\n";
+				}
+				$path_list_handle = APHMS_PLUGIN_PATH . APHMS_DS . 'merged' . APHMS_DS . 'style-handles.txt';
+				file_put_contents( $path_list_handle, $log_style_handles );
+
+			}
+
+			foreach ( $this->deregister['style'] as $handle ) {
+
+				wp_deregister_style( $handle );
+			}
+
+			$qstring      = '?rand=' . time();
+			$file_css_url = APHMS_PLUGIN_URL . '/merged/' . 'merged-style' . '-' . $token . '.css' . $qstring;
+			wp_enqueue_style( 'merged-style', $file_css_url, '', SPEED_BOOSTER_PACK_VERSION );
 
 		}
 
-		function spb_compression( $buffer ) {
+
+		/**
+		 * File path
+		 * Find relative path of each style or script
+		 */
+		private function file_path( $handle, $src, $type ) {
+			$clean_hash = $clean = strtok( $src, '?' );
+
+			$site_url       = site_url();
+			$parse_site_url = parse_url( $site_url );
+			$parse_url      = parse_url( $clean_hash );
+
+			$site_path = '';
+			if ( key_exists( 'path', $parse_site_url ) ) {
+				$site_path = $parse_site_url['path'];
+			}
+
+			if ( key_exists( 'host', $parse_url ) ) {
+
+
+				$file_path = str_replace( $site_path, '', $parse_url['path'] );
+				$file_path = ltrim( $file_path, '/' );
+			} else {
+				$file_path = ltrim( $parse_url['path'], '/' );
+			}
+
+			return $file_path;
+		}
+
+		public function start_minify() {
+
+			if ( ! is_admin() ) {
+				ob_start( array( 'Speed_Booster_Pack', 'spb_html_compression' ) );
+			}
+		}
+
+
+		function spb_html_compression( $buffer ) {
 
 
 			$initial = strlen( $buffer );
@@ -203,7 +313,32 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			Activate the plugin
 		-----------------------------------------------------------------------------------------------------------*/
 
-		public static function sbp_activate() {
+		public static function sbp_activate() { // @todo: look below
+
+
+			/*
+			 * public function hook_page_cache_purge() {
+				// hook into a collection of page cache purge actions if filter allows.
+				if ( apply_filters( 'autoptimize_filter_main_hookpagecachepurge', true ) ) {
+					$page_cache_purge_actions = array(
+						'after_rocket_clean_domain', // exists.
+						'hyper_cache_purged', // Stefano confirmed this will be added.
+						'w3tc_flush_posts', // exits.
+						'w3tc_flush_all', // exists.
+						'ce_action_cache_cleared', // Sven confirmed this will be added.
+						'comet_cache_wipe_cache', // still to be confirmed by Raam.
+						'wp_cache_cleared', // cfr. https://github.com/Automattic/wp-super-cache/pull/537.
+						'wpfc_delete_cache', // Emre confirmed this will be added this.
+						'swift_performance_after_clear_all_cache', // swift perf. yeah!
+					);
+					$page_cache_purge_actions = apply_filters( 'autoptimize_filter_main_pagecachepurgeactions', $page_cache_purge_actions );
+					foreach ( $page_cache_purge_actions as $purge_action ) {
+						add_action( $purge_action, 'autoptimizeCache::clearall_actionless' );
+					}
+				}
+			}
+			*/
+
 		}
 
 
