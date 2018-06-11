@@ -35,16 +35,16 @@
 //@todo: automatically collapse accordeons on "advanced" tab
 /**
  *
-register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions1' );
-register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions2' );
-register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions3' );
-register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions4' );
-
-register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions1' );
-register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions2' );
-register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions3' );
-register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions4' );
-register_setting( 'speed_booster_settings_group', 'sbp_integer' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions1' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions2' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions3' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions4' );
+ *
+ * register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions1' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions2' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions3' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_defer_exceptions4' );
+ * register_setting( 'speed_booster_settings_group', 'sbp_integer' );
  */
 
 /*----------------------------------------------------------------------------------------------------------
@@ -124,7 +124,70 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			require_once 'feedback/class-epsilon-feedback.php';
 			new Epsilon_Feedback( __FILE__ );
 
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CommentPreserver.php';
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/HTML/Main.php';
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/Main.php';
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/Compressor.php';
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/UriRewriter.php';
+			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/JS/Main.php';
+
+
+			add_action( 'get_header', array( $this, 'start_minify' ), -1 );
+
 		}    // END public function __construct
+
+
+		public function start_minify() {
+
+			if ( ! is_admin() ) {
+				ob_start( array( 'Speed_Booster_Pack', 'spb_compression' ) );
+			}
+
+		}
+
+		function spb_compression( $buffer ) {
+
+
+			$initial = strlen( $buffer );
+
+			$buffer = Minify_HTML::minify( $buffer, array(
+				'jsMinifier'  => array( 'JSMin', 'minify' ),
+				'cssMinifier' => array( 'Minify_CSS', 'minify' ),
+			) );
+
+
+			$final   = strlen( $buffer );
+			$savings = round( ( ( $initial - $final ) / $initial * 100 ), 4 );
+
+			$show_compression_values = apply_filters( 'spb_show_compression', true );
+
+			if ( $show_compression_values ) {
+				if ( 0 !== $savings ) {
+					$buffer .= PHP_EOL . '<!--' . PHP_EOL . '*** This site runs Speed Booster Plugin - http://wordpress.org/plugins/speed-booster-pack ***' . PHP_EOL . '*** Total size saved: ' . esc_html( $savings ) . '% | Size before compression: ' . esc_html( $this->format_size_units( $initial ) ) . ' | Size after compression: ' . esc_html( $this->format_size_units( $final ) ) . ' . ***' . PHP_EOL . '-->';
+				}
+			}
+
+
+			return $buffer;
+		}
+
+		public function format_size_units( $bytes ) {
+			if ( $bytes >= 1073741824 ) {
+				$bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';
+			} elseif ( $bytes >= 1048576 ) {
+				$bytes = number_format( $bytes / 1048576, 2 ) . ' MB';
+			} elseif ( $bytes >= 1024 ) {
+				$bytes = number_format( $bytes / 1024, 2 ) . ' KB';
+			} elseif ( $bytes > 1 ) {
+				$bytes = $bytes . ' bytes';
+			} elseif ( 1 == $bytes ) {
+				$bytes = $bytes . ' byte';
+			} else {
+				$bytes = '0 bytes';
+			}
+
+			return $bytes;
+		}
 
 
 		/*----------------------------------------------------------------------------------------------------------
@@ -208,6 +271,8 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			return $links;
 
 		}    //	End function sbp_settings_link
+
+
 	}//	End class Speed_Booster_Pack
 }    //	End if (!class_exists("Speed_Booster_Pack")) (1)
 

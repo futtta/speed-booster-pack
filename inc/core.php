@@ -12,14 +12,16 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 			global $sbp_options;
 
-			add_action( 'wp_enqueue_scripts', array( $this, 'sbp_no_more_fontawesome' ), 9999 );
 			add_action( 'after_setup_theme', array( $this, 'sbp_junk_header_tags' ) );
 
-			$this->sbp_css_optimizer(); // CSS Optimizer functions
+			// Minifier
+			if ( ! is_admin() and isset( $sbp_options['sbp_css_minify'] ) ) {
+				//$this->sbp_minifier();
+			}
 
 			// Minifier
 			if ( ! is_admin() and isset( $sbp_options['minify_html_js'] ) ) {
-				$this->sbp_minifier();
+				//$this->sbp_minifier();
 			}
 
 			//	Remove query strings from static resources
@@ -55,7 +57,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 		function sbp_minifier() {
 
-			require_once( SPEED_BOOSTER_PACK_PATH . 'inc/sbp-minifier.php' );
 		}    //	End function sbp_minifier()
 
 
@@ -65,7 +66,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 		function sbp_css_optimizer() {
 
-			require_once( SPEED_BOOSTER_PACK_PATH . 'inc/css-optimizer.php' );
 
 		}    //	End function sbp_css_optimizer()
 
@@ -126,7 +126,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 
 			return $headers;
 		}
-
 
 
 		/*--------------------------------------------------------------------------------------------------------

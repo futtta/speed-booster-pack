@@ -44,10 +44,12 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 		public function sbp_add_menu() {
 
 			global $sbp_settings_page;
-			$sbp_settings_page = add_menu_page( __( 'Speed Booster Options', 'sb-pack' ), __( 'Speed Booster', 'sb-pack' ), 'manage_options', 'sbp-options', array(
-				$this,
-				'sbp_plugin_settings_page',
-			), plugin_dir_url( __FILE__ ) . 'images/icon-16x16.png' );
+			$sbp_settings_page = add_menu_page(
+				__( 'Speed Booster Options', 'sb-pack' ), __( 'Speed Booster', 'sb-pack' ), 'manage_options', 'sbp-options', array(
+					$this,
+					'sbp_plugin_settings_page',
+				), plugin_dir_url( __FILE__ ) . 'images/icon-16x16.png'
+			);
 
 		}   //  END public function add_menu()
 
@@ -59,7 +61,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Options' ) ) {
 			---------------------------------------------------------------------------------------------------------*/
 
 			global $sbp_options;
-
 
 			// Render the plugin options page HTML
 			include( SPEED_BOOSTER_PACK_PATH . 'inc/template/options.php' );
