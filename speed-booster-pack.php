@@ -77,7 +77,7 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 
 	class Speed_Booster_Pack {
 
-		protected $sbp_options;
+		protected $sbp_options = array();
 
 		const INIT_EARLIER_PRIORITY = -1;
 		const DEFAULT_HOOK_PRIORITY = 2;
@@ -88,7 +88,8 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 		-----------------------------------------------------------------------------------------------------------*/
 
 		public function __construct() {
-			$this->sbp_options = get_option( 'sbp_settings', self::plugin_settings_defaults() );
+			//$this->sbp_options = get_option( 'sbp_settings', self::plugin_settings_defaults() );
+			$this->sbp_options = get_option( 'sbp_settings' );
 
 			// Enqueue admin scripts
 			add_action( 'admin_enqueue_scripts', array( $this, 'sbp_admin_enqueue_scripts' ) );
@@ -132,16 +133,6 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 		public static function plugin_settings_defaults() {
 
 			return array(
-				'remove_emojis'    => 1, // remove emoji scripts
-				'remove_wsl'       => 1, // remove WSL link in header
-				'remove_adjacent'  => 1, // remove post adjacent links
-				'wml_link'         => 1, // remove Windows Manifest Live link
-				'rsd_link'         => 1, // remove really simple discovery
-				'wp_generator'     => 1, // remove WP version
-				'remove_all_feeds' => 1, // remove all WP feeds
-				'disable_xmlrpc'   => 1, // disable XML-RPC pingbacks
-				'font_awesome'     => 1, // remove extra font awesome styles
-				'query_strings'    => 1, // remove query strings
 			);
 		}
 
@@ -194,7 +185,7 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 				}
 			}
 			if ( ! defined( 'SPEED_BOOSTER_WP_ROOT_URL' ) ) {
-				define( 'SPEED_BOOSTER_WP_ROOT_URL', str_replace( SPEED_BOOSTER_WP_CONTENT_NAME, '', SPEED_BOOSTER_WP_ROOT_URL ) );
+				define( 'SPEED_BOOSTER_WP_ROOT_URL', str_replace( SPEED_BOOSTER_WP_CONTENT_NAME, '', SPEED_BOOSTER_WP_CONTENT_URL ) );
 			}
 			if ( ! defined( 'SPEED_BOOSTER_HASH' ) ) {
 				define( 'SPEED_BOOSTER_HASH', wp_hash( SPEED_BOOSTER_CACHE_URL ) );
@@ -577,19 +568,19 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 	 * @return bool
 	 */
 		public static function cacheavail() {
-			if ( ! defined( 'speed_booster_CACHE_DIR' ) ) {
+			if ( ! defined( 'SPEED_BOOSTER_CACHE_DIR' ) ) {
 				// We didn't set a cache.
 				return false;
 			}
 
 			foreach ( array( '', 'js', 'css' ) as $dir ) {
-				if ( ! self::check_cache_dir( speed_booster_CACHE_DIR . $dir ) ) {
+				if ( ! self::check_cache_dir( SPEED_BOOSTER_CACHE_DIR . $dir ) ) {
 					return false;
 				}
 			}
 
 			// Using .htaccess inside our cache folder to overrule wp-super-cache.
-			$htaccess = speed_booster_CACHE_DIR . '/.htaccess';
+			$htaccess = SPEED_BOOSTER_CACHE_DIR . '/.htaccess';
 			if ( ! is_file( $htaccess ) ) {
 				/**
 			 * Create `wp-content/AO_htaccess_tmpl` file with
