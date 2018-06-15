@@ -29,10 +29,11 @@
 */
 
 
-//@todo: rework the CSS Async functionality
-//@todo: fix lazyLoad with WooCommerce <- it actually works flawlessly, it doesn't seem to work with AO and/or Cloudflare hosted CSS
-//@todo: add system info menu page
-//@todo: automatically collapse accordeons on "advanced" tab
+
+/**
+ * @todo: add system info menu page
+ */
+
 /**
  *
  * register_setting( 'speed_booster_settings_group', 'sbp_js_footer_exceptions1' );
@@ -51,25 +52,7 @@
 	Global Variables
 -----------------------------------------------------------------------------------------------------------*/
 
-/**
- * Default plugin values
- *
- * @since 3.7
- */
-$sbp_defaults = array(
-	'remove_emojis'    => 1, // remove emoji scripts
-	'remove_wsl'       => 1, // remove WSL link in header
-	'remove_adjacent'  => 1, // remove post adjacent links
-	'wml_link'         => 1, // remove Windows Manifest Live link
-	'rsd_link'         => 1, // remove really simple discovery
-	'wp_generator'     => 1, // remove WP version
-	'remove_all_feeds' => 1, // remove all WP feeds
-	'disable_xmlrpc'   => 1, // disable XML-RPC pingbacks
-	'font_awesome'     => 1, // remove extra font awesome styles
-	'query_strings'    => 1, // remove query strings
-);
 
-$sbp_options = get_option( 'sbp_settings', (array) $sbp_defaults );    // retrieve the plugin settings from the options table
 
 /*----------------------------------------------------------------------------------------------------------
 	Define some useful plugin constants
@@ -84,11 +67,7 @@ if ( ! defined( 'SHORTPIXEL_AFFILIATE_CODE' ) ) {
 }
 
 
-define( 'APHMS_PLUGIN_DIR_NAME', 'speed-booster-pack' );
-define( 'APHMS_PLUGIN_FILE_NAME', 'speed-booster-pack.php' );
-define( 'APHMS_DS', DIRECTORY_SEPARATOR );
-define( 'APHMS_PLUGIN_PATH', WP_PLUGIN_DIR . APHMS_DS . APHMS_PLUGIN_DIR_NAME );
-define( 'APHMS_PLUGIN_URL', WP_PLUGIN_URL . '/' . APHMS_PLUGIN_DIR_NAME );
+
 
 /*----------------------------------------------------------------------------------------------------------
 	Main Plugin Class
@@ -98,7 +77,10 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 
 	class Speed_Booster_Pack {
 
-		private $to_do = array();
+		protected $sbp_options;
+
+		const INIT_EARLIER_PRIORITY = -1;
+		const DEFAULT_HOOK_PRIORITY = 2;
 
 
 		/*----------------------------------------------------------------------------------------------------------
@@ -106,13 +88,15 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 		-----------------------------------------------------------------------------------------------------------*/
 
 		public function __construct() {
-			global $sbp_options;
+			$this->sbp_options = get_option( 'sbp_settings', self::plugin_settings_defaults() );
 
 			// Enqueue admin scripts
 			add_action( 'admin_enqueue_scripts', array( $this, 'sbp_admin_enqueue_scripts' ) );
 
 			// load plugin textdomain
-			add_action( 'plugins_loaded', array( $this, 'sbp_load_translation' ) );
+			add_action( 'plugins_loaded', array( $this, 'load_translation' ) );
+			add_action( 'plugins_loaded', array( $this, 'start_setup' ) );
+			add_action( 'plugins_loaded', array( $this, 'startup_purge_cache' ) );
 
 			// Load plugin settings page
 			require_once( SPEED_BOOSTER_PACK_PATH . 'inc/settings.php' );
@@ -125,229 +109,373 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			// Enqueue admin style
 			add_action( 'admin_enqueue_scripts', array( $this, 'sbp_enqueue_styles' ) );
 
-			// Filters
+			// Settings Links
 			$this->path = plugin_basename( __FILE__ );
 			add_filter( "plugin_action_links_$this->path", array( $this, 'sbp_settings_link' ) );
+
+			// Custom action hooks
+			add_action( 'speed_booster_setup_done', array( $this, 'check_cache_then_run' ) );
 
 			// load the uninstall feedback class
 			require_once 'feedback/class-epsilon-feedback.php';
 			new Epsilon_Feedback( __FILE__ );
 
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CommentPreserver.php';
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/HTML/Main.php';
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/Main.php';
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/Compressor.php';
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/CSS/UriRewriter.php';
-			require_once SPEED_BOOSTER_PACK_PATH . 'inc/minifiers/JS/Main.php';
-
-
-			//add_action( 'get_header', array( $this, 'start_minify' ), -1 );
-
-			//add_action( 'wp_print_scripts', array( $this, 'merge_styles' ), 10 );
-
 		}    // END public function __construct
 
+		/**
+		 * Function that holds options table defaults
+		 * Pre-populate on plugin install
+		 *
+		 *
+		 * @return void
+		 */
+		public static function plugin_settings_defaults() {
 
-		public function merge_styles() {
-
-			/*
-			if ( ! $this->options['merge_styles'] ) {
-				return false;
-			}
-			*/
-
-			global $wp_styles;
-
-			$token        = time();
-			$merged_style = '';
-			$list_handles = array();
-
-
-			$queues = $wp_styles->queue;
-			$wp_styles->all_deps( $queues );
-			$this->to_do['style'] = $wp_styles->queue;
-
-
-
-			$path = APHMS_PLUGIN_PATH . APHMS_DS . 'merged' . APHMS_DS . 'merged-style' . '-' . $token . '.css';
-
-			foreach ( $wp_styles->to_do as $handle ) {
-
-				if ( ! key_exists( $handle, $wp_styles->registered ) ) {
-					continue;
-				}
-
-				$file_path     = $this->file_path( $handle, $wp_styles->registered[ $handle ]->src, 'style' );
-				$file_contents = file_get_contents( $file_path ); // @todo: should use WP FileSystem API with fallback to file_get_contents here
-
-				/**
-				 * We have to save the handle outside the file_exists to make sure all handle are saved,
-				 * this is useful when checking cache
-				 */
-				$list_handles[]         = $handle;
-				$log_handles[ $handle ] = $wp_styles->registered[ $handle ]->src;
-
-
-				$this->deregister['style'][] = $handle;
-				$minifier                    = Minify_CSS::minify( $file_contents );
-
-				$merged_style .= $minifier;
-
-			}
-
-			if ( $merged_style ) {
-				file_put_contents( $path, '/* SPB Merge Scripts v' . SPEED_BOOSTER_PACK_VERSION . ' */' . "\r\n" . $merged_style );
-
-				$log_style_handles = '';
-				foreach ( $log_handles as $handle => $url ) {
-					$log_style_handles .= $handle . ': ' . $url . "\r\n";
-				}
-				$path_list_handle = APHMS_PLUGIN_PATH . APHMS_DS . 'merged' . APHMS_DS . 'style-handles.txt';
-				file_put_contents( $path_list_handle, $log_style_handles );
-
-			}
-
-			foreach ( $this->deregister['style'] as $handle ) {
-
-				wp_deregister_style( $handle );
-			}
-
-			$qstring      = '?rand=' . time();
-			$file_css_url = APHMS_PLUGIN_URL . '/merged/' . 'merged-style' . '-' . $token . '.css' . $qstring;
-			wp_enqueue_style( 'merged-style', $file_css_url, '', SPEED_BOOSTER_PACK_VERSION );
-
+			return array(
+				'remove_emojis'    => 1, // remove emoji scripts
+				'remove_wsl'       => 1, // remove WSL link in header
+				'remove_adjacent'  => 1, // remove post adjacent links
+				'wml_link'         => 1, // remove Windows Manifest Live link
+				'rsd_link'         => 1, // remove really simple discovery
+				'wp_generator'     => 1, // remove WP version
+				'remove_all_feeds' => 1, // remove all WP feeds
+				'disable_xmlrpc'   => 1, // disable XML-RPC pingbacks
+				'font_awesome'     => 1, // remove extra font awesome styles
+				'query_strings'    => 1, // remove query strings
+			);
 		}
 
+		public function start_setup() {
+
+			// Do we gzip in php when caching or is the webserver doing it?
+			define( 'SPEED_BOOSTER_CACHE_NOGZIP', (bool) get_option( 'speed_booster_cache_nogzip' ) );
+
+			/**
+			 * Override these by specifying them in your wp-config.php file
+			 */
+			if ( ! defined( 'SPEED_BOOSTER_WP_CONTENT_NAME' ) ) {
+				define( 'SPEED_BOOSTER_WP_CONTENT_NAME', '/' . wp_basename( WP_CONTENT_DIR ) );
+			}
+			if ( ! defined( 'SPEED_BOOSTER_CACHE_URL' ) ) {
+				define( 'SPEED_BOOSTER_CACHE_URL', '/cache/speed-booster-pack/' );
+			}
+			if ( ! defined( 'SPEED_BOOSTER_CACHEFILE_PREFIX' ) ) {
+				define( 'SPEED_BOOSTER_CACHEFILE_PREFIX', 'spb_' );
+			}
+			// Note: trailing slash is not optional!
+			if ( ! defined( 'SPEED_BOOSTER_CACHE_DIR' ) ) {
+				define( 'SPEED_BOOSTER_CACHE_DIR', self::get_pathname() );
+			}
+
+			if ( ! defined( 'WP_ROOT_DIR' ) ) {
+				define( 'WP_ROOT_DIR', substr( WP_CONTENT_DIR, 0, strlen( WP_CONTENT_DIR ) - strlen( SPEED_BOOSTER_WP_CONTENT_NAME ) ) );
+			}
+
+			if ( ! defined( 'SPEED_BOOSTER_WP_SITE_URL' ) ) {
+				if ( function_exists( 'domain_mapping_siteurl' ) ) {
+					define( 'SPEED_BOOSTER_WP_SITE_URL', domain_mapping_siteurl( get_current_blog_id() ) );
+				} else {
+					define( 'SPEED_BOOSTER_WP_SITE_URL', site_url() );
+				}
+			}
+			if ( ! defined( 'SPEED_BOOSTERWP_CONTENT_URL' ) ) {
+				if ( function_exists( 'domain_mapping_siteurl' ) ) {
+					define( 'SPEED_BOOSTER_WP_CONTENT_URL', str_replace( get_original_url( speed_booster_WP_SITE_URL ), speed_booster_WP_SITE_URL, content_url() ) );
+				} else {
+					define( 'SPEED_BOOSTER_WP_CONTENT_URL', content_url() );
+				}
+			}
+			if ( ! defined( 'SPEED_BOOSTER_CACHE_URL' ) ) {
+				if ( is_multisite() && apply_filters( 'speed_booster_separate_blog_caches', true ) ) {
+					$blog_id = get_current_blog_id();
+					define( 'SPEED_BOOSTER_CACHE_URL', SPEED_BOOSTER_WP_CONTENT_URL . SPEED_BOOSTER_CACHE_URL . $blog_id . '/' );
+				} else {
+					define( 'SPEED_BOOSTER_CACHE_URL', SPEED_BOOSTER_WP_CONTENT_URL . SPEED_BOOSTER_CACHE_URL );
+				}
+			}
+			if ( ! defined( 'SPEED_BOOSTER_WP_ROOT_URL' ) ) {
+				define( 'SPEED_BOOSTER_WP_ROOT_URL', str_replace( SPEED_BOOSTER_WP_CONTENT_NAME, '', SPEED_BOOSTER_WP_ROOT_URL ) );
+			}
+			if ( ! defined( 'SPEED_BOOSTER_HASH' ) ) {
+				define( 'SPEED_BOOSTER_HASH', wp_hash( SPEED_BOOSTER_CACHE_URL ) );
+			}
+
+			do_action( 'speed_booster_setup_done' );
+		}
 
 		/**
-		 * File path
-		 * Find relative path of each style or script
+		 * Hook onto other know page caching systems and clear all cache
+		 *
+		 * @todo: should implement speed_Cache::clearall_actionless
+		 *
+		 * @return void
 		 */
-		private function file_path( $handle, $src, $type ) {
-			$clean_hash = $clean = strtok( $src, '?' );
-
-			$site_url       = site_url();
-			$parse_site_url = parse_url( $site_url );
-			$parse_url      = parse_url( $clean_hash );
-
-			$site_path = '';
-			if ( key_exists( 'path', $parse_site_url ) ) {
-				$site_path = $parse_site_url['path'];
-			}
-
-			if ( key_exists( 'host', $parse_url ) ) {
-
-
-				$file_path = str_replace( $site_path, '', $parse_url['path'] );
-				$file_path = ltrim( $file_path, '/' );
-			} else {
-				$file_path = ltrim( $parse_url['path'], '/' );
-			}
-
-			return $file_path;
-		}
-
-		public function start_minify() {
-
-			if ( ! is_admin() ) {
-				ob_start( array( 'Speed_Booster_Pack', 'spb_html_compression' ) );
-			}
-		}
-
-
-		function spb_html_compression( $buffer ) {
-
-
-			$initial = strlen( $buffer );
-
-			$buffer = Minify_HTML::minify( $buffer, array(
-				'jsMinifier'  => array( 'JSMin', 'minify' ),
-				'cssMinifier' => array( 'Minify_CSS', 'minify' ),
-			) );
-
-
-			$final   = strlen( $buffer );
-			$savings = round( ( ( $initial - $final ) / $initial * 100 ), 4 );
-
-			$show_compression_values = apply_filters( 'spb_show_compression', true );
-
-			if ( $show_compression_values ) {
-				if ( 0 !== $savings ) {
-					$buffer .= PHP_EOL . '<!--' . PHP_EOL . '*** This site runs Speed Booster Plugin - http://wordpress.org/plugins/speed-booster-pack ***' . PHP_EOL . '*** Total size saved: ' . esc_html( $savings ) . '% | Size before compression: ' . esc_html( $this->format_size_units( $initial ) ) . ' | Size after compression: ' . esc_html( $this->format_size_units( $final ) ) . ' . ***' . PHP_EOL . '-->';
+		public function startup_purge_cache() {
+			// hook into a collection of page cache purge actions if filter allows.
+			if ( apply_filters( 'speed_booster_filter_main_hookpagecachepurge', true ) ) {
+				$page_cache_purge_actions = array(
+					'after_rocket_clean_domain',
+					'hyper_cache_purged',
+					'w3tc_flush_posts',
+					'w3tc_flush_all',
+					'ce_action_cache_cleared',
+					'comet_cache_wipe_cache',
+					'wp_cache_cleared',
+					'wpfc_delete_cache',
+					'swift_performance_after_clear_all_cache', // swift perf!
+				);
+				$page_cache_purge_actions = apply_filters( 'speed_booster_filter_main_pagecachepurgeactions', $page_cache_purge_actions );
+				foreach ( $page_cache_purge_actions as $purge_action ) {
+					/**
+				 * @todo: fix this
+				 */
+					//add_action( $purge_action, 'speed_Cache::clearall_actionless' );
 				}
 			}
-
-
-			return $buffer;
 		}
 
-		public function format_size_units( $bytes ) {
-			if ( $bytes >= 1073741824 ) {
-				$bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';
-			} elseif ( $bytes >= 1048576 ) {
-				$bytes = number_format( $bytes / 1048576, 2 ) . ' MB';
-			} elseif ( $bytes >= 1024 ) {
-				$bytes = number_format( $bytes / 1024, 2 ) . ' KB';
-			} elseif ( $bytes > 1 ) {
-				$bytes = $bytes . ' bytes';
-			} elseif ( 1 == $bytes ) {
-				$bytes = $bytes . ' byte';
+		/**
+		 * Function that checks if the cache directory is writeable
+		 * Display admin notice if it's not
+		 *
+		 * @return void
+		 */
+		public function check_cache_then_run() {
+			if ( self::cacheavail() ) {
+
+				if ( $this->sbp_options['minify_html_js'] || get_option( 'spb_minify_js' ) || get_option( 'spb_minify_css' ) ) {
+
+					// Hook into WordPress frontend.
+					if ( defined( 'SPEED_BOOSTER_INIT_EARLIER' ) ) {
+						add_action( 'init', array( $this, 'start_buffering' ), self::INIT_EARLIER_PRIORITY );
+					} else {
+						if ( ! defined( 'SPEED_BOOSTER_HOOK_INTO' ) ) {
+							define( 'SPEED_BOOSTER_HOOK_INTO', 'template_redirect' );
+						}
+						add_action(
+							constant( 'SPEED_BOOSTER_HOOK_INTO' ), array( $this, 'start_buffering' ), self::DEFAULT_HOOK_PRIORITY
+						);
+					}
+				}
 			} else {
-				$bytes = '0 bytes';
+				add_action( 'admin_notices', self::notice_cache_unavailable() );
+			}
+		}
+
+		/**
+	 * Setup output buffering if needed.
+	 *
+	 * @return void
+	 */
+		public function start_buffering() {
+
+			if ( $this->should_buffer() ) {
+
+				if ( $this->sbp_options['minify_html_js'] ) {
+					if ( ! defined( 'CONCATENATE_SCRIPTS' ) ) {
+						define( 'CONCATENATE_SCRIPTS', false );
+					}
+					if ( ! defined( 'COMPRESS_SCRIPTS' ) ) {
+						define( 'COMPRESS_SCRIPTS', false );
+					}
+				}
+
+				/*
+				if ( $conf->get( 'speed_booster_js' ) ) {
+					if ( ! defined( 'CONCATENATE_SCRIPTS' ) ) {
+						define( 'CONCATENATE_SCRIPTS', false );
+					}
+					if ( ! defined( 'COMPRESS_SCRIPTS' ) ) {
+						define( 'COMPRESS_SCRIPTS', false );
+					}
+				}
+
+
+				if ( $conf->get( 'speed_booster_css' ) ) {
+					if ( ! defined( 'COMPRESS_CSS' ) ) {
+						define( 'COMPRESS_CSS', false );
+					}
+				}
+				*/
+
+				if ( apply_filters( 'speed_booster_filter_obkiller', false ) ) {
+					while ( ob_get_level() > 0 ) {
+						ob_end_clean();
+					}
+				}
+
+				// Now, start the real thing!
+				ob_start( array( $this, 'end_buffering' ) );
+			}
+		}
+
+		/**
+	 * Returns true if all the conditions to start output buffering are satisfied.
+	 *
+	 * @param bool $doing_tests Allows overriding the optimization of only
+	 *                          deciding once per request (for use in tests).
+	 *
+	 * @return bool
+	 */
+		public function should_buffer( $doing_tests = false ) {
+			static $do_buffering = null;
+
+			// Only check once in case we're called multiple times by others but
+			// still allows multiple calls when doing tests.
+			if ( null === $do_buffering || $doing_tests ) {
+
+				$sbp_noptimize = false;
+
+				// Checking for DONOTMINIFY constant as used by e.g. WooCommerce POS.
+				if ( defined( 'DONOTMINIFY' ) && ( constant( 'DONOTMINIFY' ) === true || constant( 'DONOTMINIFY' ) === 'true' ) ) {
+					$sbp_noptimize = true;
+				}
+
+				// Skip checking query strings if they're disabled.
+				if ( apply_filters( 'speed_booster_filter_honor_qs_noptimize', true ) ) {
+					// Check for `ao_noptimize` (and other) keys in the query string
+					// to get non-optimized page for debugging.
+					$keys = array(
+						'ao_noptimize',
+						'ao_noptirocket',
+						'spb_noptimize',
+					);
+					foreach ( $keys as $key ) {
+						if ( array_key_exists( $key, $_GET ) && '1' === $_GET[ $key ] ) {
+							$sbp_noptimize = true;
+							break;
+						}
+					}
+				}
+
+				// If setting says not to optimize logged in user and user is logged in...
+				if ( 'on' !== get_option( 'speed_booster_optimize_logged', 'on' ) && is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
+					$sbp_noptimize = true;
+				}
+
+				// If setting says not to optimize cart/checkout.
+				if ( 'on' !== get_option( 'speed_booster_optimize_checkout', 'on' ) ) {
+					// Checking for woocommerce, easy digital downloads and wp ecommerce...
+					foreach ( array(
+						'is_checkout',
+						'is_cart',
+						'edd_is_checkout',
+						'wpsc_is_cart',
+						'wpsc_is_checkout',
+					) as $func ) {
+						if ( function_exists( $func ) && $func() ) {
+							$sbp_noptimize = true;
+							break;
+						}
+					}
+				}
+
+				// Allows blocking of autoptimization on your own terms regardless of above decisions.
+				$sbp_noptimize = (bool) apply_filters( 'speed_booster_filter_noptimize', $sbp_noptimize );
+
+				// Check for site being previewed in the Customizer (available since WP 4.0).
+				$is_customize_preview = false;
+				if ( function_exists( 'is_customize_preview' ) && is_customize_preview() ) {
+					$is_customize_preview = is_customize_preview();
+				}
+
+				/**
+			 * We only buffer the frontend requests (and then only if not a feed
+			 * and not turned off explicitly and not when being previewed in Customizer)!
+			 * NOTE: Tests throw a notice here due to is_feed() being called
+			 * while the main query hasn't been ran yet. Thats why we use
+			 * speed_booster_INIT_EARLIER in tests.
+			 */
+				$do_buffering = ( ! is_admin() && ! is_feed() && ! $sbp_noptimize && ! $is_customize_preview );
 			}
 
-			return $bytes;
+			return $do_buffering;
 		}
+
+		/**
+	 * Returns true if given markup is considered valid/processable/optimizable.
+	 *
+	 * @param string $content Markup.
+	 *
+	 * @return bool
+	 */
+		public function is_valid_buffer( $content ) {
+			// Defaults to true.
+			$valid = true;
+
+			$has_no_html_tag    = ( false === stripos( $content, '<html' ) );
+			$has_xsl_stylesheet = ( false !== stripos( $content, '<xsl:stylesheet' ) );
+			$has_html5_doctype  = ( preg_match( '/^<!DOCTYPE.+html>/i', $content ) > 0 );
+
+			if ( $has_no_html_tag ) {
+				// Can't be valid amp markup without an html tag preceding it.
+				$is_amp_markup = false;
+			} else {
+				$is_amp_markup = self::is_amp_markup( $content );
+			}
+
+			// If it's not html, or if it's amp or contains xsl stylesheets we don't touch it.
+			if ( $has_no_html_tag && ! $has_html5_doctype || $is_amp_markup || $has_xsl_stylesheet ) {
+				$valid = false;
+			}
+
+			return $valid;
+		}
+
+		/**
+	 * Returns true if given $content is considered to be AMP markup.
+	 * This is far from actual validation against AMP spec, but it'll do for now.
+	 *
+	 * @param string $content Markup to check.
+	 *
+	 * @return bool
+	 */
+		public static function is_amp_markup( $content ) {
+			$is_amp_markup = preg_match( '/<html[^>]*(?:amp|⚡)/i', $content );
+
+			return (bool) $is_amp_markup;
+		}
+
+		/**
+	 * Processes/optimizes the output-buffered content and returns it.
+	 * If the content is not processable, it is returned unmodified.
+	 *
+	 * @param string $content Buffered content.
+	 *
+	 * @return string
+	 */
+		public function end_buffering( $content ) {
+
+			// Bail early without modifying anything if we can't handle the content.
+			if ( ! $this->is_valid_buffer( $content ) ) {
+				return $content;
+			}
+
+			return $content;
+		}
+
+
+		public static function notice_cache_unavailable() {
+			echo '<div class="error"><p>';
+			// Translators: %s is the cache directory location.
+			printf( __( 'Speed Booster Pack can\'t write to the cache directory (%s), please fix to enable CSS/JS optimization to work properly!', 'sb-pack' ), SPEED_BOOSTER_CACHE_DIR );
+			echo '</p></div>';
+		}
+
+
 
 
 		/*----------------------------------------------------------------------------------------------------------
 			Load plugin textdomain
 		-----------------------------------------------------------------------------------------------------------*/
 
-		function sbp_load_translation() {
+		function load_translation() {
 			load_plugin_textdomain( 'sb-pack', false, SPEED_BOOSTER_PACK_PATH . '/lang/' );
 		}
 
 
-		/*----------------------------------------------------------------------------------------------------------
-			Activate the plugin
-		-----------------------------------------------------------------------------------------------------------*/
-
-		public static function sbp_activate() { // @todo: look below
 
 
-			/*
-			 * public function hook_page_cache_purge() {
-				// hook into a collection of page cache purge actions if filter allows.
-				if ( apply_filters( 'autoptimize_filter_main_hookpagecachepurge', true ) ) {
-					$page_cache_purge_actions = array(
-						'after_rocket_clean_domain', // exists.
-						'hyper_cache_purged', // Stefano confirmed this will be added.
-						'w3tc_flush_posts', // exits.
-						'w3tc_flush_all', // exists.
-						'ce_action_cache_cleared', // Sven confirmed this will be added.
-						'comet_cache_wipe_cache', // still to be confirmed by Raam.
-						'wp_cache_cleared', // cfr. https://github.com/Automattic/wp-super-cache/pull/537.
-						'wpfc_delete_cache', // Emre confirmed this will be added this.
-						'swift_performance_after_clear_all_cache', // swift perf. yeah!
-					);
-					$page_cache_purge_actions = apply_filters( 'autoptimize_filter_main_pagecachepurgeactions', $page_cache_purge_actions );
-					foreach ( $page_cache_purge_actions as $purge_action ) {
-						add_action( $purge_action, 'autoptimizeCache::clearall_actionless' );
-					}
-				}
-			}
-			*/
-
-		}
-
-
-		/*----------------------------------------------------------------------------------------------------------
-			Deactivate the plugin
-		-----------------------------------------------------------------------------------------------------------*/
-
-		public static function sbp_deactivate() {
-		}
 
 
 		/*----------------------------------------------------------------------------------------------------------
@@ -380,16 +508,20 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 			wp_enqueue_script( 'jquery-ui-slider' );
 			wp_enqueue_script( 'postbox' );
 
-			wp_enqueue_script( 'sbp-admin-scripts', plugins_url( 'inc/js/admin-scripts.js', __FILE__ ), array(
-				'jquery',
-				'postbox',
-				'jquery-ui-slider',
-			), SPEED_BOOSTER_PACK_VERSION, true );
+			wp_enqueue_script(
+				'sbp-admin-scripts', plugins_url( 'inc/js/admin-scripts.js', __FILE__ ), array(
+					'jquery',
+					'postbox',
+					'jquery-ui-slider',
+				), SPEED_BOOSTER_PACK_VERSION, true
+			);
 
-			wp_enqueue_script( 'sbp-plugin-install', plugins_url( 'inc/js/plugin-install.js', __FILE__ ), array(
-				'jquery',
-				'updates',
-			), SPEED_BOOSTER_PACK_VERSION, true );
+			wp_enqueue_script(
+				'sbp-plugin-install', plugins_url( 'inc/js/plugin-install.js', __FILE__ ), array(
+					'jquery',
+					'updates',
+				), SPEED_BOOSTER_PACK_VERSION, true
+			);
 
 		}
 
@@ -407,6 +539,158 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 
 		}    //	End function sbp_settings_link
 
+		/**
+	 * Returns the cache directory pathname used.
+	 * Done as a function so we canSlightly different
+	 * if multisite is used and `speed_booster_separate_blog_caches` filter
+	 * is used.
+	 *
+	 * @return string
+	 */
+		public static function get_pathname() {
+			$pathname = self::get_pathname_base();
+
+			if ( is_multisite() && apply_filters( 'speed_booster_separate_blog_caches', true ) ) {
+				$blog_id   = get_current_blog_id();
+				$pathname .= $blog_id . '/';
+			}
+
+			return $pathname;
+		}
+
+		/**
+	 * Returns the base path of our cache directory.
+	 *
+	 * @return string
+	 */
+		protected static function get_pathname_base() {
+			$pathname = WP_CONTENT_DIR . SPEED_BOOSTER_CACHE_URL;
+
+			return $pathname;
+		}
+
+		/**
+	 * Ensures the cache directory exists, is writeable and contains the
+	 * required .htaccess files.
+	 * Returns false in case it fails to ensure any of those things.
+	 *
+	 * @return bool
+	 */
+		public static function cacheavail() {
+			if ( ! defined( 'speed_booster_CACHE_DIR' ) ) {
+				// We didn't set a cache.
+				return false;
+			}
+
+			foreach ( array( '', 'js', 'css' ) as $dir ) {
+				if ( ! self::check_cache_dir( speed_booster_CACHE_DIR . $dir ) ) {
+					return false;
+				}
+			}
+
+			// Using .htaccess inside our cache folder to overrule wp-super-cache.
+			$htaccess = speed_booster_CACHE_DIR . '/.htaccess';
+			if ( ! is_file( $htaccess ) ) {
+				/**
+			 * Create `wp-content/AO_htaccess_tmpl` file with
+			 * whatever htaccess rules you might need
+			 * if you want to override default AO htaccess
+			 */
+				$htaccess_tmpl = WP_CONTENT_DIR . '/AO_htaccess_tmpl';
+				if ( is_file( $htaccess_tmpl ) ) {
+					$content = file_get_contents( $htaccess_tmpl );
+				} elseif ( is_multisite() || ! speed_booster_CACHE_NOGZIP ) {
+					$content = '<IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css A30672000
+        ExpiresByType text/javascript A30672000
+        ExpiresByType application/javascript A30672000
+</IfModule>
+<IfModule mod_headers.c>
+    Header append Cache-Control "public, immutable"
+</IfModule>
+<IfModule mod_deflate.c>
+        <FilesMatch "\.(js|css)$">
+        SetOutputFilter DEFLATE
+    </FilesMatch>
+</IfModule>
+<IfModule mod_authz_core.c>
+    <Files *.php>
+        Require all granted
+    </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <Files *.php>
+        Order allow,deny
+        Allow from all
+    </Files>
+</IfModule>';
+				} else {
+					$content = '<IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresByType text/css A30672000
+        ExpiresByType text/javascript A30672000
+        ExpiresByType application/javascript A30672000
+</IfModule>
+<IfModule mod_headers.c>
+    Header append Cache-Control "public, immutable"
+</IfModule>
+<IfModule mod_deflate.c>
+    <FilesMatch "\.(js|css)$">
+        SetOutputFilter DEFLATE
+    </FilesMatch>
+</IfModule>
+<IfModule mod_authz_core.c>
+    <Files *.php>
+        Require all denied
+    </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <Files *.php>
+        Order deny,allow
+        Deny from all
+    </Files>
+</IfModule>';
+				}
+				@file_put_contents( $htaccess, $content ); // @codingStandardsIgnoreLine
+			}
+
+			// All OK!
+			return true;
+		}
+
+		/**
+	 * Ensures the specified `$dir` exists and is writeable.
+	 * Returns false if that's not the case.
+	 *
+	 * @param string $dir Directory to check/create.
+	 *
+	 * @return bool
+	 */
+		protected static function check_cache_dir( $dir ) {
+			// Try creating the dir if it doesn't exist.
+			if ( ! file_exists( $dir ) ) {
+				@mkdir( $dir, 0775, true ); // @codingStandardsIgnoreLine
+				if ( ! file_exists( $dir ) ) {
+					return false;
+				}
+			}
+
+			// If we still cannot write, bail.
+			if ( ! is_writable( $dir ) ) {
+				return false;
+			}
+
+			// Create an index.html in there to avoid prying eyes!
+			$idx_file = rtrim( $dir, '/\\' ) . '/index.html';
+			if ( ! is_file( $idx_file ) ) {
+				@file_put_contents( $idx_file, '<html><head><meta name="robots" content="noindex, nofollow"></head><body>Generated by <a href="http://wordpress.org/extend/plugins/speed_/" rel="nofollow">speed_</a></body></html>' ); // @codingStandardsIgnoreLine
+			}
+
+			return true;
+		}
+
+
 
 	}//	End class Speed_Booster_Pack
 }    //	End if (!class_exists("Speed_Booster_Pack")) (1)
@@ -414,10 +698,10 @@ if ( ! class_exists( 'Speed_Booster_Pack' ) ) {
 if ( class_exists( 'Speed_Booster_Pack' ) ) {
 
 	// Installation and uninstallation hooks
-	register_activation_hook( __FILE__, array( 'Speed_Booster_Pack', 'sbp_activate' ) );
-	register_deactivation_hook( __FILE__, array( 'Speed_Booster_Pack', 'sbp_deactivate' ) );
+	//register_activation_hook( __FILE__, array( 'Speed_Booster_Pack', 'sbp_activate' ) );
+	//register_deactivation_hook( __FILE__, array( 'Speed_Booster_Pack', 'sbp_deactivate' ) );
 
 	// instantiate the plugin class
-	$speed_booster_pack = new Speed_Booster_Pack();
+	new Speed_Booster_Pack();
 
 }    //	End if (!class_exists("Speed_Booster_Pack")) (2)
