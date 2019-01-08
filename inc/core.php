@@ -379,6 +379,8 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			$js_footer_exceptions3 = '';
 			$js_footer_exceptions4 = '';
 
+			// print_r( $wp_scripts );
+
 			if ( get_option( 'sbp_js_footer_exceptions1' ) ) {
 				$js_footer_exceptions1 = get_option( 'sbp_js_footer_exceptions1' );
 			}
@@ -422,8 +424,8 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 				}
 
 				// deregister & dequeue the script
-				wp_deregister_script( 'jquery-core' );
-				wp_dequeue_script( 'jquery-core' );
+				$wp_scripts->done[] = 'jquery-core';
+
 			}
 
 
