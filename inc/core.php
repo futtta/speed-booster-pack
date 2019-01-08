@@ -79,11 +79,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			}
 
 
-			// JPEG  Compression filter
-			add_filter( 'jpeg_quality', array( $this, 'filter_image_quality' ) );
-			add_filter( 'wp_editor_set_quality', array( $this, 'filter_image_quality' ) );
-
-
 			/**
 			 * @since 3.7
 			 */
@@ -230,23 +225,6 @@ if ( ! class_exists( 'Speed_Booster_Pack_Core' ) ) {
 			}
 
 		}
-
-
-		/*--------------------------------------------------------------------------------------------------------
-			Get image quality value if it's set. Otherwise it's set to 90
-		---------------------------------------------------------------------------------------------------------*/
-
-		function filter_image_quality() {
-
-			if ( get_option( 'sbp_integer' ) ) {
-				$sbp_compression = get_option( 'sbp_integer' );
-			} else {
-				$sbp_compression = 75; //@since v3.7
-			}
-
-			return $sbp_compression;
-		}
-
 
 		/*--------------------------------------------------------------------------------------------------------
 			ACTION wp_print_styles
