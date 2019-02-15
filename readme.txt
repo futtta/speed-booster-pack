@@ -2,7 +2,7 @@
 Contributors: machothemes, silkalns
 Tags: speed, optimization, performance, scripts to the footer, google libraries, font awesome cdn, defer parsing of javascript, remove query strings, gtmetrix, google pageSpeed, yslow, compression, render-blocking css
 Requires at least: 3.6
-Tested up to: 5.0.2
+Tested up to: 5.1
 Requires PHP: 5.6
 Stable tag: 3.7.7
 License: GPLv3 or later
